@@ -1,301 +1,249 @@
-from collections import deque
+#Code optimizer
 
-# Breadth-First Search algorithm
-def bfs(graph, start, goal):
-    queue = deque([(start, [start])])
+class Operand:
+    def __init__(self, l, r):
+        self.l = l
+        self.r = r
 
-    while queue:
-        current_node, path = queue.popleft()
-        if current_node == goal:
-            return path
-        for neighbor in graph[current_node]:
-            if neighbor not in path:
-                queue.append((neighbor, path + [neighbor]))
+def main():
+    op = [Operand(input("left: "), input("right: ")) for _ in range(int(input("Enter the Number of Values: ")))]
+    print("\nIntermediate Code:")
+    for o in op:
+        print(o.l + "=" + o.r)
+    
+    pr = []
+    for i, o1 in enumerate(op):
+        if i == 0 or o1.l != op[i-1].l:
+            pr.append(o1)
+    
+    print("\nAfter Dead Code Elimination:")
+    for p in pr:
+        print(p.l + "=" + p.r)
+    
+    for i, p1 in enumerate(pr):
+        for p2 in pr[i+1:]:
+            if p1.r == p2.r:
+                p2.l = ""
+    
+    print("\nAfter Common Subexpression Elimination:")
+    for p in pr:
+        if p.l != "":
+            print(p.l + "=" + p.r)
 
-    return []
+if __name__ == "__main__":
+    main()
 
-# Example usage:
-graph = {}
-n = int(input("Enter the number of nodes: "))
-print("Enter edges in the format 'node1 node2'")
-for _ in range(n):
-    node1, node2 = input().split()
-    if node1 not in graph:
-        graph[node1] = []
-    if node2 not in graph:
-        graph[node2] = []
-    graph[node1].append(node2)
-    graph[node2].append(node1)
+# Enter the Number of Values: 5
+# left: a
+# right: 9
+# left: b
+# right: c+d
+# left: e
+# right: c+d
+# left: f
+# right: b+e
+# left: r
+# right: f
 
-start_node = input("Enter the start node: ")
-goal_node = input("Enter the goal node: ")
+------------------------------------------------------------------------------------------------------------------
 
-print("\nStarting from", start_node)
-print("Searching for", goal_node)
+#intermediate code
 
-path = bfs(graph, start_node, goal_node)
+OPERATORS = set(['+', '-', '*', '/', '(', ')'])
+PRI = {'+':1, '-':1, '*':2, '/':2}
 
-if path:
-    print("Path found:", ' -> '.join(path))
-else:
-    print("No path found.")
-
-# vert = 6; start=1 ; end=7
------------------------------------------------------------------------------------------------------------------------------
-
-# Depth-First Search algorithm
-def dfs(graph, start, goal, visited=None):
-    if visited is None:
-        visited = set()
-    visited.add(start)
-    if start == goal:
-        return [start]
-    for neighbor in graph[start]:
-        if neighbor not in visited:
-            path = dfs(graph, neighbor, goal, visited)
-            if path:
-                return [start] + path
-    return []
-
-# Example usage:
-graph = {}
-n = int(input("Enter the number of nodes: "))
-print("Enter edges in the format 'node1 node2'")
-for _ in range(n):
-    node1, node2 = input().split()
-    if node1 not in graph:
-        graph[node1] = []
-    if node2 not in graph:
-        graph[node2] = []
-    graph[node1].append(node2)
-    graph[node2].append(node1)
-
-start_node = input("Enter the start node: ")
-goal_node = input("Enter the goal node: ")
-
-print("\nStarting from", start_node)
-print("Searching for", goal_node)
-
-path = dfs(graph, start_node, goal_node)
-
-if path:
-    print("Path found:", ' -> '.join(path))
-else:
-    print("No path found.")
-
-# vert = 6; start=1 ; end=7
-
--------------------------------------------------------------------------------------------
-from queue import PriorityQueue
-
-# Greedy Best-First Search algorithm
-def gbfs(graph, start, goal, heuristic):
-    open_list = PriorityQueue()
-    open_list.put((heuristic[start], start))
-    closed_set = set()
-
-    while not open_list.empty():
-        _, current_node = open_list.get()
-        if current_node == goal:
-            return True
-        closed_set.add(current_node)
-        for neighbor in graph[current_node]:
-            if neighbor not in closed_set:
-                open_list.put((heuristic[neighbor], neighbor))
-    return False
-
-# Example usage:
-graph = {}
-n = int(input("Enter the number of nodes: "))
-print("Enter edges in the format 'node1 node2'")
-for _ in range(n):
-    node1, node2 = input().split()
-    if node1 not in graph:
-        graph[node1] = []
-    if node2 not in graph:
-        graph[node2] = []
-    graph[node1].append(node2)
-    graph[node2].append(node1)
-
-start_node = input("Enter the start node: ")
-goal_node = input("Enter the goal node: ")
-
-# Define heuristic values for each node (you can replace this with your own)
-heuristic = {}
-print("Enter heuristic values for each node:")
-for node in graph.keys():
-    heuristic[node] = int(input("Heuristic value for node {}: ".format(node)))
-
-print("\nStarting from", start_node)
-print("Searching for", goal_node)
-
-if gbfs(graph, start_node, goal_node, heuristic):
-    print("Goal found:", goal_node)
-else:
-    print("Goal not found.")
-
-# vert = 6; start=A ; end=F
-# Hueristic = 8 6 5 4 3 0 1 
------------------------------------------------------------------------------------------------------
-
-import heapq
-
-# A* algorithm
-def astar(graph, start, goal, heuristic):
-    open_list = [(0, start)]  # (f-value, node)
-    closed_set = set()
-    g_values = {node: float('inf') for node in graph}  # Initialize g-values to infinity
-    g_values[start] = 0
-
-    while open_list:
-        _, current_node = heapq.heappop(open_list)
-        if current_node == goal:
-            return True
-        closed_set.add(current_node)
-        for neighbor, cost in graph[current_node].items():
-            tentative_g = g_values[current_node] + cost
-            if tentative_g < g_values[neighbor]:
-                g_values[neighbor] = tentative_g
-                f_value = tentative_g + heuristic[neighbor]
-                heapq.heappush(open_list, (f_value, neighbor))
-    return False
-
-# Example usage:
-graph = {}
-n = int(input("Enter the number of nodes: "))
-print("Enter edges in the format 'node1 node2 cost'")
-for _ in range(n):
-    node1, node2, cost = input().split()
-    cost = int(cost)
-    if node1 not in graph:
-        graph[node1] = {}
-    if node2 not in graph:
-        graph[node2] = {}
-    graph[node1][node2] = cost
-    graph[node2][node1] = cost
-
-start_node = input("Enter the start node: ")
-goal_node = input("Enter the goal node: ")
-
-# Define heuristic values for each node (you can replace this with your own)
-heuristic = {}
-print("Enter heuristic values for each node:")
-for node in graph.keys():
-    heuristic[node] = int(input("Heuristic value for node {}: ".format(node)))
-
-print("\nStarting from", start_node)
-print("Searching for", goal_node)
-
-if astar(graph, start_node, goal_node, heuristic):
-    print("Goal found:", goal_node)
-else:
-    print("Goal not found.")
-
-# vert = 6; start=A ; end=F
-# 3 2 4 5 7 1
-# Hueristic = 8 6 5 4 3 0 1 
-
-------------------------------------------------------------------------------------------------------------------------
-
-import random
-
-def objective_function(solution):
-    # Define your objective function here
-    # This function should evaluate the quality of a solution and return a value
-    # The higher the value, the better the solution
-    # Modify this function based on your specific optimization problem
-    return sum(solution)
-
-def generate_neighbor(current_solution):
-    # Generate a neighboring solution by making a small modification to the current solution
-    # This function should implement the logic to generate a neighboring solution
-    # Modify this function based on your specific optimization problem
-    neighbor = current_solution[:]
-    index = random.randint(0, len(neighbor) - 1)
-    neighbor[index] = 1 - neighbor[index]  # Flip the value at the selected index
-    return neighbor
-
-def hill_climbing():
-    # Initialization
-    current_solution = [random.randint(0, 1) for _ in range(10)]  # Generate an initial solution
-    current_fitness = objective_function(current_solution)
-
-    # Iterative process
-    while True:
-        # Neighbor generation
-        neighbor = generate_neighbor(current_solution)
-        neighbor_fitness = objective_function(neighbor)
-
-        # Comparison
-        if neighbor_fitness >= current_fitness:
-            current_solution = neighbor
-            current_fitness = neighbor_fitness
+### INFIX ===> POSTFIX ###
+def infix_to_postfix(express):
+    stack = [] # only pop when the coming op has priority 
+    output = ''
+    for ch in express:
+        if ch not in OPERATORS:
+            output += ch
+        elif ch == '(':
+            stack.append('(')
+        elif ch == ')':
+            while stack and stack[-1] != '(':
+                output += stack.pop()
+            stack.pop() # pop '('
         else:
-            break  # Terminate if no better solution is found
+            while stack and stack[-1] != '(' and PRI[ch] <= PRI[stack[-1]]:
+                output += stack.pop()
+            stack.append(ch)
+    # leftover
+    while stack: 
+    	output += stack.pop()
 
-    return current_solution, current_fitness
+    
+    return(output)
 
-# Usage example
-best_solution, best_fitness = hill_climbing()
-print("Best Solution:", best_solution)
-print("Best Fitness:", best_fitness)
-------------------------------
-# A simple Python3 program to find
-# maximum score that
-# maximizing player can get
+expres = input("INPUT THE EXPRESSION: ")
 
-import math
- 
+pos = infix_to_postfix(expres)
+print(f'POSTFIX: {pos}')
 
-def minimax (curDepth, nodeIndex,
+-----------------------------------------------------------------------------------------------------------------------
 
-             maxTurn, scores, 
+#lex 
 
-             targetDepth):
- 
+keywords = {"auto","break","case","char","const","continue","default","do",
+"double","else","enum","extern","float","for","goto",
+"if","int","long","register","return","short","signed",
+"sizeof","static","struct","switch","typedef","union",
+"unsigned","void","volatile","while","printf","scanf","%d","include","stdio.h","main"}
 
-    # base case : targetDepth reached
+operators = {"+","-","*","/","<",">","=","<=",">=","==","!=","++","--","%"}
 
-    if (curDepth == targetDepth): 
+delimiters = {'(',')','{','}','[',']','"',"'",';','#',',',''}
 
-        return scores[nodeIndex]
+def detect_keywords(text):
+	arr = []
+	for word in text:
+		if word in keywords:
+			arr.append(word)
+	return list(set(arr))
 
-     
+def detect_operators(text):
+	arr = []
+	for word in text:
+		if word in operators:
+			arr.append(word)
+	return list(set(arr))
 
-    if (maxTurn):
+def detect_delimiters(text):
+	arr = []
+	for word in text:
+		if word in delimiters:
+			arr.append(word)
+	return list(set(arr))
 
-        return max(minimax(curDepth + 1, nodeIndex * 2, 
-
-                    False, scores, targetDepth), 
-
-                   minimax(curDepth + 1, nodeIndex * 2 + 1, 
-
-                    False, scores, targetDepth))
-
-     
-
+def detect_num(text):
+	arr = []
+	for word in text:
+		try:
+			a = int(word)
+			arr.append(word)
+		except:
+			pass
+	return list(set(arr))
+"""
+this is original function for detecting identifier
+def is_identifier(token):
+    if token[0] in numbers or token in keywords:
+        return False
     else:
+        return identifier(token)
 
-        return min(minimax(curDepth + 1, nodeIndex * 2, 
+def identifier(token):
+    if len(token)<2 and (token[0] in alphabets or token[0] in numbers or token[0] == "_"):
+        return True
+    elif token[0] in alphabets or token[0] in numbers or token[0] == "_":
+        return identifier(token[1:])
+    else:
+        return False
+"""
+def detect_identifiers(text):
+	k = detect_keywords(text)
+	o = detect_operators(text)
+	d = detect_delimiters(text)
+	n = detect_num(text)
+	not_ident = k + o + d + n
+	arr = []
+	for word in text:
+		if word not in not_ident:
+			arr.append(word)
+	return arr
 
-                     True, scores, targetDepth), 
+# with open('e1-example.txt') as t:
+# 	text = t.read().split()
 
-                   minimax(curDepth + 1, nodeIndex * 2 + 1, 
+text=input('write here')
+text= text.split()
 
-                     True, scores, targetDepth))
+print("Keywords: ",detect_keywords(text))
+print("Operators: ",detect_operators(text))
+print("Delimiters: ",detect_delimiters(text))
+print("Identifiers: ",detect_identifiers(text))
+print("Numbers: ",detect_num(text))
 
-     
-# Driver code
+-----------------------------------------------------------------------------------------------------------------------
 
-scores = [3, 5, 2, 9, 12, 5, 23, 23]
- 
+#recursive decent
+def match(expected):
+    global i
+    if i < len(s) and s[i] == expected:
+        i += 1
+        return True
+    return False
 
-treeDepth = math.log(len(scores), 2)
- 
+def S():
+    return match('a') and A() and match('c')
 
-print("The optimal value is : ", end = "")
+def A():
+    return match('b') and A() or True
 
-print(minimax(0, 0, True, scores, treeDepth))
- 
-# This code is contributed
-# by rootshadow
+
+def B():
+    return match('b')
+
+s = list(input("Enter the string: "))
+i = 0
+
+print("Grammar:")
+print("S -> aAc")
+print("A -> b | bA")
+print("B -> b\n")
+
+if S() and i == len(s):
+    print("String is accepted")
+else:
+    print("String is not accepted")
+
+-----------------------------------------------------------------------------------------------------------------------
+
+#lex exp5
+
+%{
+#include <stdio.h>
+%}
+
+%%
+
+[0-9]+          { printf("INTEGER: %s\n", yytext); }
+[a-zA-Z]+       { printf("IDENTIFIER: %s\n", yytext); }
+[ \t\n]         { /* ignore whitespace */ }
+.               { printf("Invalid character: %s\n", yytext); }
+
+%%
+int yywrap(){
+return 1;
+}
+
+int main() {
+    yylex();
+    return 0;
+}
+
+-----------------------------------------------------------------------------------------------------------
+
+#lexical analyzer using lex
+
+%{
+#include <stdio.h>
+%}
+
+%%
+
+[0-9]+          { printf("INTEGER: %s\n", yytext); }
+[a-zA-Z]+       { printf("IDENTIFIER: %s\n", yytext); }
+[ \t\n]         { /* ignore whitespace */ }
+.               { printf("Invalid character: %s\n", yytext); }
+
+%%
+int yywrap(){
+return 1;
+}
+
+int main() {
+    yylex();
+    return 0;
+}
